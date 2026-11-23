@@ -2,7 +2,7 @@
    CINEMA PROJECTION — 3 minutes maximum, strict time budget
    · real-time clock (4 s) → storm → 4 pages block by block: Overview, TDOA, Target (orbit), Solar
    · French military voice (pre-recorded brief summaries of what is displayed) + AM-radio ambience (static MP3)
-   · SCENARIO: forced transmission (30 s, reversed voices, abstract waveform) → black + accelerating sirens + tornado → resume
+   · SCENARIO: forced transmission (30 s, reversed voices, abstract waveform) → loud interference over a heavily blurred VTLO logo → fade to black → resume
      triggered at ~50 % of the time OR on the 3rd tap within 8 s; the show ends on time (3:00 from launch)
    · no real-time generated sound: everything is played from MP3 files
    · after the run every page of the app stays available (exit() restores the full navigation)
@@ -23,7 +23,7 @@
   const now = () => performance.now();
   const RATE = 1.16;                        // vitesse de lecture des voix
   const TOTAL_MS = 180000;                  // 3:00 depuis l'ouverture de l'app
-  const FINALE_MS = 6500, INTRO_MS = 2300, HACK_MS = 30000, BLACK_MS = 11000, FADE_MS = 1500, SCEN_MS = HACK_MS + BLACK_MS + FADE_MS + 600;
+  const FINALE_MS = 6500, INTRO_MS = 2300, HACK_MS = 30000, BLACK_MS = 11000, INTF_MS = 8500, FADE_MS = 1500, SCEN_MS = HACK_MS + BLACK_MS + FADE_MS + 600;
   const DUR = window.__AUDDUR || {};
   const clipSec = id => ((DUR[id] || 1.6) / RATE);
 
@@ -84,7 +84,7 @@
       try { if (NATIVE) N.sayStop(); else if (cur.audio) cur.audio.pause(); } catch (e) {}
       finish(t);
     }
-    // ── effets forts du scénario (transmission forcée, blackout) : volume maximal ──
+    // ── effets forts du scénario (transmission forcée, interférences) : volume maximal ──
     function fx(name) {
       return new Promise(res => {
         fxStop(); const token = ++seq, ms = ((DUR[name] || 12) * 1000) + 400; fxCur = { token, res };
@@ -321,7 +321,7 @@
       '<button id="cx-snd" aria-label="Sound">' + ICON.vol + '</button><button id="cx-exit" aria-label="Exit presentation">' + ICON.close + '</button></div></div></div>' +
     '<div id="cx-card"><div class="cx-kal"></div><div class="cx-rings"></div><div class="cx-rings b"></div><div class="cx-num"></div><div class="cx-name"></div><div class="cx-sub"></div></div>' +
     '<div id="cx-hack"><canvas id="cx-hack-cv" width="150" height="270"></canvas><div class="hk-top">⚠ UNIDENTIFIED SIGNAL</div><div class="hk-mid" id="hk-mid">FORCED TRANSMISSION</div><div class="hk-bot" id="hk-bot"></div></div>' +
-    '<div id="cx-black"></div>' +
+    '<div id="cx-black"><div class="cx-ilogo"></div></div>' +
     '<button id="cx-fab" aria-label="Replay presentation">' + ICON.film + '</button>');
   const el$ = id => doc.getElementById(id), card = el$('cx-card'), glow = el$('cx-glow');
 
@@ -358,7 +358,7 @@
   }, { passive: true });
   el$('cx-fab').addEventListener('click', () => { window.__lxFromLaunch = false; start(); });
 
-  /* ── scénario : transmission forcée → noir + sirènes/tornade → reprise ── */
+  /* ── scénario : transmission forcée → interférences (logo VTLO flouté) → fondu au noir → reprise ── */
   let hackRaf = 0;
   function hackVisual(onOff) {
     const hk = el$('cx-hack'), cv = el$('cx-hack-cv'), c = cv.getContext('2d'), W = cv.width, H = cv.height, mid = el$('hk-mid'), bot = el$('hk-bot');
@@ -392,12 +392,14 @@
     const hv = setInterval(() => buzz('0,80,120,200'), 2600);
     // 2. 30 s de transmission
     await sleep(HACK_MS - 200); clearInterval(hv);
-    // 3. fondu au noir + sirènes accélérées + vent de tornade
-    blk.style.transition = 'opacity 1.3s ease'; blk.style.opacity = 1; await sleep(1300); hackVisual(false);
-    Sound.fxStop(); Sound.fx('blackout'); const bv = setInterval(() => buzz('0,260,90,260'), 900);
-    if (!nf) blk.classList.add('alarm');
-    await sleep(BLACK_MS - 1300); clearInterval(bv); blk.classList.remove('alarm');
-    // 4. retour à la projection classique
+    // 3. interférences fortes : le logo VTLO, très flouté, apparaît en fond derrière la neige
+    blk.style.transition = 'opacity .35s ease'; blk.style.opacity = 1; blk.classList.add('intf'); if (nf) blk.classList.add('calm');
+    await sleep(350); hackVisual(false);
+    Sound.fxStop(); Sound.fx('interference'); const bv = setInterval(() => buzz('0,40,30,70,20,40'), 700);
+    await sleep(INTF_MS - 350); clearInterval(bv);
+    // 4. fondu au noir (le son s'éteint en même temps), court silence noir
+    blk.classList.remove('intf'); await sleep(BLACK_MS - INTF_MS); blk.classList.remove('calm');
+    // 5. retour à la projection classique
     blk.style.transition = 'opacity ' + (FADE_MS / 1000) + 's ease'; blk.style.opacity = 0; Sound.bgRestore(FADE_MS);
     await sleep(FADE_MS); hijack = false; skipReq = 0; taps = [];
   }
@@ -556,7 +558,7 @@
     if (!active) return;
     active = false; window.__cinemaActive = false; tok.cancel = true; finishAll(); hijack = false; hackReq = false;
     cancelAnimationFrame(lvlRaf); clearInterval(clockInt); glow.style.opacity = 0; hackVisual(false);
-    const blk = el$('cx-black'); blk.style.transition = 'none'; blk.style.opacity = 0; blk.classList.remove('alarm');
+    const blk = el$('cx-black'); blk.style.transition = 'none'; blk.style.opacity = 0; blk.classList.remove('intf', 'calm');
     Sound.stopSay(); Sound.fxStop(); Score.stop(natural ? 2.5 : 1.2); $$('[data-nar-st]').forEach(e => e.removeAttribute('data-nar-st'));
     $$('.cx-b').forEach(b => { b.classList.remove('cx-b', 'cx-on'); b.getAnimations && b.getAnimations().forEach(a => a.cancel()); b.style.filter = ''; });
     if (layer) layer.innerHTML = '';

@@ -323,7 +323,7 @@ public class MainActivity extends Activity implements SensorEventListener {
             } });
         }
 
-        // ── effets forts du scénario (transmission forcée, blackout) : volume maximal, par-dessus tout ──
+        // ── effets forts du scénario (transmission forcée, interférences) : volume maximal, par-dessus tout ──
         @JavascriptInterface public void fxPlay(final String path, final float vol, final int token) {
             ui.post(new Runnable() { @Override public void run() {
                 releaseFx();

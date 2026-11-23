@@ -24,7 +24,7 @@ All on-screen text is in English; the narration voice is French (brief radio-sty
 | 0:00 – 0:04 | **Real-time clock** (local time, UTC, date) + compact viewer-discretion notice and a *No-flash mode* switch |
 | 0:04 – 0:10 | Original storm intro (shortened) |
 | 0:10 – 3:00 | Presentation of **4 pages**: Overview, TDOA Capture, Target Profile (with the enlarged, highlighted Molniya orbit animation), Solar Comparison — 27 blocks revealed one by one with blur/deblur, puzzle, kaleidoscope, whirlpool, liquid, 3D assemble/disassemble… |
-| right after the orbit animation, **or 3 taps within 8 s** | **Scenario**: unidentified forced radio transmission (30 s, reversed voices, guttural growl, abstract inharmonic waveform, maximum volume, running track "hacked") → fade to black: accelerating sirens + tornado (11 s) → back to the presentation |
+| right after the orbit animation, **or 3 taps within 8 s** | **Scenario**: unidentified forced radio transmission (30 s, reversed voices, guttural growl, abstract inharmonic waveform, maximum volume, running track "hacked") → loud radio interference over a heavily blurred VTLO logo (8.5 s) → fade to black → back to the presentation |
 | 2:53 – 3:00 | End of transmission, back to the app |
 
 After the run **all 10 pages remain available** through the normal navigation (the floating film button replays the presentation).
@@ -34,7 +34,7 @@ The sequencer is **time-budgeted**: pace adapts continuously (taps, pause, scena
 `app/src/main/assets/www/audio/`, played by native `MediaPlayer` (3 channels: ambience, voice, loud effects):
 - `bg.mp3`: 3 min AM-radio / air-control ambience (unintelligible voices, flanger, bitcrusher, distortion), −13.5 LUFS, band-split mastering
 - `nar/*.mp3`: 33 clips (Piper `fr_FR-tom-medium`), slower and cleaner than before, lightly radio-processed (mild pitch glitches, band-limited, hiss); played at ×1.16; ambience ducks under the voice
-- `hack.mp3` (30 s) and `blackout.mp3` (11 s): scenario, −9.6 / −11 LUFS, peak ≤ −1 dBFS
+- `hack.mp3` (30 s) and `interference.mp3` (11 s, fades to silence from 8.5 s): scenario, −9.6 / −10 LUFS, peak ≤ −1.5 dBFS
 - `meta.js`: clip durations + ambience pulse envelope (for the lighting)
 Generators and measurements: `tools/audio/`.
 

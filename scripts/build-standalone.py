@@ -12,14 +12,14 @@ html = rd('index.html')
 # CSS (fonts inlined)
 fonts = re.sub(r'url\((fonts/[^)]+)\)', lambda m: 'url(%s)' % uri(m.group(1)), rd('fonts.css'))
 html = html.replace('<link rel="stylesheet" href="fonts.css">', '<style>%s</style>' % fonts)
-html = html.replace('<link rel="stylesheet" href="mobile.css">', '<style>%s</style>' % rd('mobile.css'))
+html = html.replace('<link rel="stylesheet" href="mobile.css">', '<style>%s</style>' % rd('mobile.css').replace('url(img/vtlo.png)', 'url(%s)' % uri('img/vtlo.png')))
 # head links that need files
 html = re.sub(r'<link rel="manifest"[^>]*>', '', html)
 html = re.sub(r'<link rel="icon" href="icons/icon-192.png">', '<link rel="icon" href="%s">' % uri('icons/icon-192.png'), html)
 html = re.sub(r'<link rel="apple-touch-icon"[^>]*>', '', html)
 assert 'href="fonts.css"' not in html and 'href="mobile.css"' not in html, 'stylesheet tag not matched'
 # audio bundle: path -> blob URL, transparent for `new Audio('audio/...')`
-paths = ['audio/bg.mp3', 'audio/hack.mp3', 'audio/blackout.mp3'] + sorted('audio/nar/' + f for f in os.listdir(os.path.join(W, 'audio/nar')))
+paths = ['audio/bg.mp3', 'audio/hack.mp3', 'audio/interference.mp3'] + sorted('audio/nar/' + f for f in os.listdir(os.path.join(W, 'audio/nar')))
 bundle = '{' + ','.join('"%s":"%s"' % (p, b64(p)) for p in paths) + '}'
 loader = '''<script>(function(){var D=%s,B={},A=window.Audio;
 function url(p){if(!D[p])return p;if(!B[p]){var s=atob(D[p]),u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i);B[p]=URL.createObjectURL(new Blob([u],{type:"audio/mpeg"}));}return B[p];}

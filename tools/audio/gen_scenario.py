@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Scénario sonore « transmission forcée » (30 s) + « blackout : sirènes qui s'accélèrent + tornade » (11 s).
+Scénario sonore « transmission forcée » (30 s). La suite (interférences, 11 s) est générée par gen_interference.py.
 Voix françaises synthétisées puis INVERSÉES, abaissées (guttural), anneau modulé, saturées ; sirènes à effet Doppler ;
 mastering par bandes (LR4) avec sidechain pour que chaque couche garde sa zone de fréquences.
 """
@@ -127,45 +127,4 @@ st1 = np.stack([signal.sosfilt(sos('highpass', 24, 2), c) for c in st1]).astype(
 st1 = to_lufs(st1, -9.5, -1.7); write_mp3(st1, 'out3/hack.mp3', 128)
 print('hack  : LUFS', round(lufs(st1), 1), 'crête', round(20 * np.log10(np.abs(st1).max()), 2), 'dBFS', flush=True)
 
-# ═══════════════════ 2. BLACKOUT : sirènes qui s'accélèrent + tornade (11,0 s) ═══════════════════
-D2 = 11.0; N2 = int(D2 * SR); t2 = np.arange(N2) / SR
-print('sirènes accélérées…', flush=True)
-# fréquence de balayage qui s'accélère : période 3,6 s → 0,8 s
-per = 3.6 - 2.8 * (t2 / D2) ** 1.2; phase_sw = np.cumsum(1.0 / per) / SR
-sweep = .5 - .5 * np.cos(2 * np.pi * phase_sw)                              # 0→1→0
-f_sir = 420 + 520 * sweep
-ph = 2 * np.pi * np.cumsum(f_sir) / SR
-sir = (2 * ((ph / (2 * np.pi)) % 1) - 1) * .6 + np.sin(ph) * .5 + np.sin(2.01 * ph) * .18
-sir = band(sir, 360, 3600)
-# klaxon à deux tons dont la cadence monte de 1,6 à 5 Hz (impulsions, pas de clignotement lumineux associé)
-cad = 1.6 + 3.4 * (t2 / D2) ** 1.4; gate = (np.sin(2 * np.pi * np.cumsum(cad) / SR) > 0).astype(float); gate = signal.sosfilt(sos('lowpass', 60, 2), gate)
-hl = np.where(np.sin(2 * np.pi * np.cumsum(cad * .5) / SR) > 0, 640.0, 850.0)
-klax = np.sign(np.sin(2 * np.pi * np.cumsum(hl) / SR)) * gate * .35; klax = band(klax, 500, 2800)
-print('tornade…', flush=True)
-swirl = 260 + 700 * (.5 + .5 * np.sin(2 * np.pi * (.35 + .9 * t2 / D2) * t2))                 # centre de bande qui tourbillonne
-def sweep_bp(x, fc, q=2.0):
-    out = np.zeros_like(x); blk = 1024
-    for i in range(0, len(x), blk):
-        f = float(np.clip(fc[i], 120, 6000)); s = signal.butter(2, [f * .8, f * 1.25], 'bandpass', fs=SR, output='sos')
-        seg = signal.sosfilt(s, x[i:i + blk + 256])[:blk]; w = np.hanning(2 * blk)[:len(seg)] if False else 1.0; out[i:i + blk] = seg
-    return out
-wind = sweep_bp(rng.standard_normal(N2), swirl) * (.4 + .6 * np.clip(t2 / 5, 0, 1)) * (.7 + .3 * np.sin(2 * np.pi * 1.3 * t2))
-wind = band(wind, 150, 4200)
-roar = band(rng.standard_normal(N2), 40, 420) * (.5 + .5 * np.sin(2 * np.pi * 11 * t2 + 2)) * (.3 + .7 * np.clip(t2 / 6, 0, 1)); roar = band(roar, 45, 400)
-whistle = np.sin(2 * np.pi * np.cumsum(1500 + 700 * np.sin(2 * np.pi * .7 * t2)) / SR) * .08 * np.clip(t2 / 4, 0, 1); whistle = band(whistle, 900, 2600)
-debris = np.zeros(N2)
-for a in rng.uniform(1, D2 - .3, 90):
-    m = int(rng.uniform(.004, .02) * SR); i0 = int(a * SR); debris[i0:i0 + m] += rng.standard_normal(m) * np.exp(-np.arange(m) / (m / 4)) * rng.uniform(.2, .6)
-debris = band(debris, 1200, 7000)
-# ducking : la tornade recule sous la sirène pour ne pas s'additionner sur les mêmes fréquences
-sev = np.clip(env_of(sir, 6) / (np.percentile(env_of(sir, 6), 95) + 1e-9), 0, 1)
-gw = 1 - .35 * sev
-pan_w = np.sin(2 * np.pi * .23 * t2)
-Lb = sir * .85 + klax * .8 + wind * .95 * gw + roar * .9 * gw + whistle + debris * .5
-Rb = np.roll(sir, 11) * .85 + np.roll(klax, 7) * .8 + np.roll(wind, 29) * .95 * gw + roar * .9 * gw + np.roll(whistle, 5) + np.roll(debris, 23) * .5
-Lb *= (1 + .25 * pan_w); Rb *= (1 - .25 * pan_w)
-fd = np.ones(N2); fd[:int(.02 * SR)] = np.linspace(0, 1, int(.02 * SR)); fd[-int(2.0 * SR):] = np.linspace(1, 0, int(2.0 * SR)) ** 1.5
-st2 = np.stack([Lb * fd, Rb * fd]).astype(np.float32); st2 = np.stack([signal.sosfilt(sos('highpass', 26, 2), c) for c in st2]).astype(np.float32)
-st2 = to_lufs(st2, -11.0, -1.7); write_mp3(st2, 'out3/blackout.mp3', 128)
-print('blackout : LUFS', round(lufs(st2), 1), 'crête', round(20 * np.log10(np.abs(st2).max()), 2), 'dBFS', flush=True)
-json.dump({'hack': D1, 'blackout': D2}, open('out3/scenario.json', 'w'))
+json.dump({'hack': D1}, open('out3/scenario.json', 'w'))

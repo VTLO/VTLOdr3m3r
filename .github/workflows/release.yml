@@ -17,6 +17,8 @@ jobs:
           TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           cp dist/VTLOdr3m3r.apk "VTLOdr3m3r-${TAG}.apk"
+          # re-running for an existing tag replaces that release (and moves the tag to this commit)
+          gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes 2>/dev/null || true
           gh release create "$TAG" "VTLOdr3m3r-${TAG}.apk" \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title "VTLOdr3m3r ${TAG}" --generate-notes
