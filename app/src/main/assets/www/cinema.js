@@ -21,7 +21,7 @@
                set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
   const noflash = () => root.classList.contains('noflash');
   const now = () => performance.now();
-  const RATE = 1.16;                        // vitesse de lecture des voix
+  const RATE = 1.06;                        // vitesse de lecture des voix
   const TOTAL_MS = 180000;                  // 3:00 depuis l'ouverture de l'app
   const FINALE_MS = 6500, INTRO_MS = 2300, HACK_MS = 30000, BLACK_MS = 11000, INTF_MS = 8500, FADE_MS = 1500, SCEN_MS = HACK_MS + BLACK_MS + FADE_MS + 600;
   const DUR = window.__AUDDUR || {};
@@ -320,7 +320,8 @@
       '<button id="cx-page" aria-label="Next page">' + ICON.page + '</button>' +
       '<button id="cx-snd" aria-label="Sound">' + ICON.vol + '</button><button id="cx-exit" aria-label="Exit presentation">' + ICON.close + '</button></div></div></div>' +
     '<div id="cx-card"><div class="cx-kal"></div><div class="cx-rings"></div><div class="cx-rings b"></div><div class="cx-num"></div><div class="cx-name"></div><div class="cx-sub"></div></div>' +
-    '<div id="cx-hack"><canvas id="cx-hack-cv" width="150" height="270"></canvas><div class="hk-top">⚠ UNIDENTIFIED SIGNAL</div><div class="hk-mid" id="hk-mid">FORCED TRANSMISSION</div><div class="hk-bot" id="hk-bot"></div></div>' +
+    '<div id="cx-tape"><canvas id="cx-tape-cv" width="144" height="256"></canvas><div class="tp-osd tp-l" id="tp-l">► PLAY  SP</div><div class="tp-osd tp-r" id="tp-r">00:00:00:00</div><div class="tp-osd tp-d" id="tp-d">NOV 14 1996  03:33 AM</div></div>' +
+    '<div id="cx-hack"><canvas id="cx-hack-cv" width="216" height="384"></canvas><canvas id="cx-hack-fx" width="216" height="384"></canvas><div class="hk-osd hk-l">◄◄ SIGINT RX · CH 03</div><div class="hk-osd hk-r" id="hk-rec">● REC 00:00:00</div><div class="hk-bar" id="hk-bar"></div><div class="hk-mid" id="hk-mid">SEARCHING…</div><pre class="hk-term" id="hk-term"></pre><div class="hk-bot" id="hk-bot"></div></div>' +
     '<div id="cx-black"><div class="cx-ilogo"></div></div>' +
     '<button id="cx-fab" aria-label="Replay presentation">' + ICON.film + '</button>');
   const el$ = id => doc.getElementById(id), card = el$('cx-card'), glow = el$('cx-glow');
@@ -359,26 +360,107 @@
   el$('cx-fab').addEventListener('click', () => { window.__lxFromLaunch = false; start(); });
 
   /* ── scénario : transmission forcée → interférences (logo VTLO flouté) → fondu au noir → reprise ── */
+  /* ── TAPE layer (analog horror): VHS OSD, date stamp, tracking bands, dropouts, noise — escalates across the whole run ── */
+  let tapeRaf = 0, tapeT0 = 0;
+  const pad = (n, l) => String(n).padStart(l || 2, '0');
+  const junk = (s, p) => s.replace(/[0-9A-Z]/g, ch => Math.random() < p ? '▒░#?_'.charAt(Math.random() * 5 | 0) : ch);
+  function tapeLayer(on) {
+    const L = el$('cx-tape'); cancelAnimationFrame(tapeRaf);
+    if (!on) { L.classList.remove('on'); return; }
+    L.classList.add('on'); tapeT0 = now();
+    const cv = el$('cx-tape-cv'), c = cv.getContext('2d'), W = cv.width, H = cv.height, tl = el$('tp-l'), tr = el$('tp-r'), ds = el$('tp-d'), nf = noflash(), id = c.createImageData(W, H);
+    let last = 0, band = -1, bandV = 0, nextEvt = tapeT0 + 4500, freezeUntil = 0, rev = 0;
+    const step = n => {
+      if (!L.classList.contains('on')) return; tapeRaf = requestAnimationFrame(step);
+      if (n - last < 66) return; last = n;
+      const t = now(), el = (t - tapeT0) / 1000, k = clamp(el / 170, 0, 1), d = id.data; d.fill(0);
+      const cnt = (nf ? 25 : 55) + k * 170 | 0;
+      for (let i = 0; i < cnt; i++) { const p = ((Math.random() * H | 0) * W + (Math.random() * W | 0)) * 4, v = 110 + Math.random() * 140; d[p] = v; d[p + 1] = v; d[p + 2] = v * .95; d[p + 3] = 60 + Math.random() * 90; }
+      if (Math.random() < .08 + .32 * k) { const y = Math.random() * H | 0, x = Math.random() * W | 0, l = 6 + Math.random() * 34 | 0; for (let i = 0; i < l && x + i < W; i++) { const p = (y * W + x + i) * 4; d[p] = d[p + 1] = d[p + 2] = 235; d[p + 3] = 150 + Math.random() * 50; } }
+      c.putImageData(id, 0, 0);
+      if (band < 0 && t > nextEvt) { band = H + 4; bandV = 2.5 + Math.random() * 4; nextEvt = t + (9500 - 7000 * k) * (.6 + Math.random() * .8); }
+      if (band >= 0) {
+        band -= bandV; const bh = 8 + k * 20 | 0;
+        for (let r = 0; r < bh; r++) { const y = band + r | 0; if (y < 0 || y >= H) continue; const dx = (Math.random() - .5) * 26 * (1 + k) | 0; if (!nf) c.drawImage(cv, 0, y, W, 1, dx, y, W, 1); c.fillStyle = 'rgba(215,225,230,' + (.08 + Math.random() * .2) + ')'; c.fillRect(0, y, W, 1); }
+        if (band < -30) band = -1;
+      }
+      c.fillStyle = 'rgba(190,200,205,.30)'; const hs = 2 + k * 5 | 0; for (let i = 0; i < hs; i++) c.fillRect(0, H - 1 - i, W, 1);
+      if (!nf && Math.random() < .35) c.drawImage(cv, 0, H - hs - 1, W, hs + 1, (Math.random() - .5) * 30 | 0, H - hs - 1, W, hs + 1);
+      // OSD (deck-style)
+      const glitch = Math.random() < .02 + .12 * k, sec = el | 0, fr = (el * 30 | 0) % 30;
+      if (t > freezeUntil && Math.random() < .004 + .02 * k) { rev = t + 260; }
+      tl.textContent = paused ? '❙❙ PAUSE' : (t < rev ? '◄◄ REW' : '► PLAY') + '  SP';
+      tr.textContent = glitch ? junk('00:' + pad(sec / 60 | 0) + ':' + pad(sec % 60) + ':' + pad(fr), .35) : '00:' + pad(sec / 60 | 0) + ':' + pad(sec % 60) + ':' + pad(fr);
+      const yr = k > .55 && Math.random() < .1 ? '19' + '▒6' : '1996';
+      ds.textContent = glitch ? junk('NOV 14 ' + yr + '  03:33', .3) : 'NOV 14 ' + yr + '  03:33 AM';
+    };
+    tapeRaf = requestAnimationFrame(step);
+  }
+
+  /* ── FORCED TRANSMISSION screen: military SIGINT receiver (waterfall / spectrum / scope / decoder) + VHS damage ── */
   let hackRaf = 0;
+  const HK_VOICE = [[6.2, 'We are listening.'], [10.0, 'Cease all transmission.'], [13.6, 'The sky is open.'], [17.2, 'Extinguish your lights.'], [21.0, 'We have always been listening.'], [25.0, 'Stand by for contact.']];
+  const HK_NUM = [[2.9, '749'], [5.1, '921'], [14.3, '370'], [15.4, '558'], [19.3, '299'], [20.2, '001']];
+  const HK_DATA = [1.1, 5.9, 8.4, 11.9, 13.1, 16.3, 18.1, 19.9, 22.2, 23.6, 24.4, 26.0, 28.6];
+  const HK_WOOD = [[8, 11], [15.5, 19], [21.5, 26]], HK_MASS = [[9, 3.5], [17, 3.5], [24.5, 3], [27.6, 1.4]];
+  const HK_TERM = [[.2, '> SCANNING 1559–1610 MHz'], [1.2, '> NOISE FLOOR −112 dBm'], [2.45, '> CARRIER LOCK 1576.42 MHz'], [3.0, '> CHANNEL TYPE: NUMBERS  749 921'], [6.0, '> MODULATION: UNKNOWN'],
+    [7.0, '> ENCRYPTION: NONE FOUND'], [8.0, '> LANGUAGE: ENGLISH (TIME-REVERSED)'], [11.5, '> ORIGIN: UNRESOLVED'], [13.0, '> BEARING --- ELEV ---'], [15.0, '> TDOA: NO SOLUTION'], [18.5, '> DOPPLER: NOT CONSISTENT WITH ANY ORBIT'],
+    [22.0, '> TRACE LOST. SOURCE KEEPS MOVING.'], [24.2, '> TRANSMITTER ACKNOWLEDGES RECEIVER'], [27.3, '> ▒▒▒▒ WE ARE HERE ▒▒▒▒']];
+  const HK_STATE = [[0, 'SEARCHING…'], [2.4, 'CARRIER LOCK'], [6, 'UNIDENTIFIED SIGNAL'], [12, 'FORCED TRANSMISSION'], [20, 'CHANNEL COMPROMISED'], [26, 'SOURCE: UNKNOWN']];
   function hackVisual(onOff) {
-    const hk = el$('cx-hack'), cv = el$('cx-hack-cv'), c = cv.getContext('2d'), W = cv.width, H = cv.height, mid = el$('hk-mid'), bot = el$('hk-bot');
+    const hk = el$('cx-hack'), cv = el$('cx-hack-cv'), c = cv.getContext('2d', { willReadFrequently: true }), fx = el$('cx-hack-fx').getContext('2d'), W = cv.width, H = cv.height;
+    const stEl = el$('hk-mid'), bar = el$('hk-bar'), term = el$('hk-term'), recEl = el$('hk-rec'), botEl = el$('hk-bot');
     cancelAnimationFrame(hackRaf);
     if (!onOff) { hk.classList.remove('on'); return; }
-    hk.classList.add('on'); const t0 = now(), nf = noflash(), id = ImageData ? c.createImageData(W, H) : null; let last = 0;
-    const MSG = ['FORCED TRANSMISSION', 'UNKNOWN SOURCE', 'CHANNEL COMPROMISED', 'EXTERNAL BROADCAST'];
+    hk.classList.add('on'); const t0 = now(), nf = noflash(), WY = Math.round(H * .20), WH = Math.round(H * .40), SY = Math.round(H * .66), SH = Math.round(H * .10);
+    const row = c.createImageData(W, 1); let last = 0, lastWood = -1, band = -1, bandV = 0, nextBand = 1500, rowN = 0;
+    c.fillStyle = '#02090b'; c.fillRect(0, 0, W, H);
+    const pal = v => { v = clamp(v, 0, 1); if (v < .35) return [2 + v * 20, 10 + v * 150, 12 + v * 120]; if (v < .7) { const u = (v - .35) / .35; return [8 + u * 150, 60 + u * 130, 56 + u * 40]; } const u = (v - .7) / .3; return [158 + u * 97, 190 - u * 20 + u * 60, 96 + u * 134]; };
     const step = n => {
       if (!hk.classList.contains('on')) return; hackRaf = requestAnimationFrame(step);
-      if (n - last < 42) return; last = n; const t = (now() - t0) / 1000, k = clamp(t / 30, 0, 1);
-      const d = id.data, amp = nf ? .10 : (.16 + .20 * k);                                     // grain sombre : pas de flash blanc plein écran
-      for (let i = 0; i < d.length; i += 4) { const v = Math.random() < .5 ? Math.random() * 90 * amp * 4 : 0; d[i] = v * .7; d[i + 1] = v * .9; d[i + 2] = v; d[i + 3] = 150; }
-      c.putImageData(id, 0, 0);
-      if (!nf) for (let b = 0; b < 4; b++) { if (Math.random() < .5) { const y = Math.random() * H | 0, h = 2 + Math.random() * 14 | 0, dx = (Math.random() - .5) * 60 | 0; c.drawImage(cv, 0, y, W, h, dx, y, W, h); } }
-      c.lineWidth = 1.4; c.strokeStyle = 'rgba(0,229,255,.9)'; c.beginPath();                    // oscilloscope du signal
-      for (let x = 0; x < W; x++) { const a = Math.sin(x * .09 + t * 9) * (6 + 22 * Math.abs(Math.sin(t * 1.7 + x * .015))) + (Math.random() - .5) * (4 + 14 * k); const y = H * .5 + a; x ? c.lineTo(x, y) : c.moveTo(x, y); }
-      c.stroke(); c.strokeStyle = 'rgba(255,60,60,.55)'; c.beginPath();
-      for (let x = 0; x < W; x++) { const y = H * .5 + Math.sin(x * .05 - t * 5) * 18 * Math.sin(t * .9) + (Math.random() - .5) * 6; x ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke();
-      mid.textContent = MSG[Math.floor(t / 3) % MSG.length]; const f = (1000 + Math.random() * 999).toFixed(1);
-      bot.textContent = 'FREQ ' + f + ' MHz · SOURCE: UNKNOWN · BEARING: — · T-' + String(Math.max(0, Math.ceil(30 - t))).padStart(2, '0');
+      if (n - last < 50) return; last = n;
+      const tm = now(), t = (tm - t0) / 1000, k = clamp(t / 30, 0, 1); rowN++;
+      // --- one new waterfall row from the signal model (matches the soundtrack timeline) ---
+      const v = new Float32Array(W); for (let x = 0; x < W; x++) v[x] = .05 + Math.random() * (.12 + .08 * k);
+      const add = (b, a, w) => { const i0 = Math.max(0, b - w | 0), i1 = Math.min(W - 1, b + w | 0); for (let x = i0; x <= i1; x++) v[x] += a * (1 - Math.abs(x - b) / (w + 1)); };
+      if (t < 2.4) { const b = W * (.04 + .92 * Math.pow(t / 2.4, 2)); add(b | 0, .9, 2); for (let i = 0; i < 6; i++) add(Math.random() * W | 0, .25, 4); }
+      else { add(W * .38 + Math.sin(t * 1.3) * 2 | 0, .75, 1); }
+      HK_NUM.forEach(([a]) => { if (t > a && t < a + 1.7) { const j = 5 + Math.random() * 4; add(W * .38 - j | 0, .55, 1); add(W * .38 + j | 0, .55, 1); } });
+      HK_VOICE.forEach(([a]) => { if (t > a && t < a + 3.6) { const f = 1 - (t - a) / 3.6; for (let j = 0; j < 10; j++) add(Math.round(14 + j * 15 + Math.sin(t * 6 + j) * 3), (.65 - j * .045) * (.6 + .4 * f), 1); add(W * .45 | 0, .25, W * .35 | 0); } });
+      HK_DATA.forEach(a => { if (t > a && t < a + .45) { for (let i = 0; i < 4; i++) add(W * (Math.random() < .5 ? .55 : .66) | 0, .8, 2); } });
+      HK_MASS.forEach(([a, w]) => { if (Math.abs(t - a) < w) { const u = (t - a + w) / (2 * w); add(W * (.7 - .5 * u) + Math.sin(t * 5) * 8 | 0, .5 * Math.sin(Math.PI * u), 22); } });
+      HK_WOOD.forEach(([a, b]) => { if (t > a && t < b) { const w = Math.floor(t * 10); if (w !== lastWood) { lastWood = w; for (let x = 0; x < W; x++) v[x] += nf ? .25 : .6; } } });
+      if (t > 27) { const g = (t - 27) / 3; for (let x = 0; x < W; x++) v[x] += g * g * .6 * Math.random(); }
+      for (let x = 0; x < W; x++) { const p = pal(v[x]); row.data[x * 4] = p[0]; row.data[x * 4 + 1] = p[1]; row.data[x * 4 + 2] = p[2]; row.data[x * 4 + 3] = 255; }
+      c.drawImage(cv, 0, WY, W, WH - 1, 0, WY + 1, W, WH - 1); c.putImageData(row, 0, WY);
+      // --- spectrum line above the waterfall + grid ---
+      c.fillStyle = '#02090b'; c.fillRect(0, WY - Math.round(H * .085), W, Math.round(H * .085) - 1); c.strokeStyle = 'rgba(80,220,160,.9)'; c.lineWidth = 1; c.beginPath();
+      for (let x = 0; x < W; x++) { const y = WY - 3 - clamp(v[x], 0, 1.2) * H * .07; x ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke();
+      c.strokeStyle = 'rgba(80,200,170,.18)'; c.beginPath(); for (let g = 1; g < 8; g++) { c.moveTo(g * W / 8, WY - Math.round(H * .085)); c.lineTo(g * W / 8, WY + WH); } c.stroke();
+      // cursor (receiver marker)
+      const cx = W * .38; c.strokeStyle = 'rgba(255,170,40,.75)'; c.beginPath(); c.moveTo(cx, WY - Math.round(H * .085)); c.lineTo(cx, WY + WH); c.stroke();
+      // --- scope (voice energy) ---
+      c.fillStyle = '#02090b'; c.fillRect(0, SY, W, SH); const act = HK_VOICE.some(([a]) => t > a && t < a + 3.4) ? 1 : (HK_NUM.some(([a]) => t > a && t < a + 1.7) ? .55 : .12);
+      c.strokeStyle = 'rgba(255,150,40,.95)'; c.beginPath(); for (let x = 0; x < W; x++) { const y = SY + SH / 2 + (Math.sin(x * .35 + t * 40) * Math.random() * .9 + (Math.random() - .5) * .5) * SH * .42 * act; x ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke();
+      c.strokeStyle = 'rgba(80,200,170,.35)'; c.strokeRect(.5, SY + .5, W - 1, SH - 1);
+      // --- VHS damage on a transparent overlay canvas (cleared every frame, so nothing accumulates) ---
+      fx.clearRect(0, 0, W, H);
+      if (band < 0 && tm - t0 > nextBand) { band = H + 4; bandV = 3 + Math.random() * 6; nextBand = tm - t0 + (2600 - 1800 * k) * (.5 + Math.random()); }
+      if (band >= 0) { band -= bandV; const bh = 10 + k * 30 | 0; for (let r = 0; r < bh; r++) { const y = band + r | 0; if (y < 0 || y >= H) continue; const dx = (Math.random() - .5) * 44 * (.5 + k) | 0; if (!nf) fx.drawImage(cv, 0, y, W, 1, dx, y, W, 1); fx.fillStyle = 'rgba(200,215,215,' + (.05 + Math.random() * .16) + ')'; fx.fillRect(0, y, W, 1); } if (band < -40) band = -1; }
+      if (!nf) for (let i = 0; i < 2 + k * 6; i++) if (Math.random() < .4 + k * .4) { const y = Math.random() * H | 0, h = 1 + Math.random() * 5 | 0; fx.drawImage(cv, 0, y, W, h, (Math.random() - .5) * 40 * (.3 + k) | 0, y, W, h); }
+      fx.fillStyle = 'rgba(190,200,200,.28)'; fx.fillRect(0, H - 3, W, 3); if (Math.random() < .5) fx.drawImage(cv, 0, H - 6, W, 6, (Math.random() - .5) * 36 | 0, H - 6, W, 6);
+      // --- HTML readouts ---
+      let st = HK_STATE[0][1]; HK_STATE.forEach(([a, s]) => { if (t >= a) st = s; }); stEl.textContent = (Math.random() < .05 + .1 * k) ? junk(st, .25) : st;
+      const f = 1576.42 + (t > 2.4 ? Math.sin(t * .8) * .03 * (1 + k) : (t / 2.4) * 8 - 4); const snr = (t < 2.4 ? -18 : -3 - Math.sin(t) * 2 + k * 8).toFixed(0);
+      bar.textContent = 'FREQ ' + f.toFixed(3) + ' MHz   MOD ???   SNR ' + (snr > 0 ? '+' + snr : snr) + ' dB';
+      const sec = t | 0, gl = Math.random() < .03 + .12 * k; recEl.textContent = (rowN % 14 < 8 ? '● ' : '○ ') + (gl ? junk('REC 00:' + pad(sec / 60 | 0) + ':' + pad(sec % 60), .4) : 'REC 00:' + pad(sec / 60 | 0) + ':' + pad(sec % 60) + ':' + pad((t * 30 | 0) % 30));
+      botEl.textContent = 'BEARING --- · ELEV --- · RANGE --- · T-' + pad(Math.max(0, Math.ceil(30 - t)));
+      // decoder terminal: newest line types in; reversed phrases appear time-reversed and partly corrupted
+      const lines = []; HK_NUM.forEach(([a, d]) => { if (t > a) lines.push([a, '> NUM ' + d]); });
+      HK_VOICE.forEach(([a, s]) => { if (t > a + .3) lines.push([a + .3, '> ' + junk(s.toUpperCase().split('').reverse().join(''), Math.max(0, .3 - (t - a) * .04))]); });
+      HK_TERM.forEach(([a, s]) => { if (t > a && a !== 3.0) lines.push([a, s]); });
+      lines.sort((p, q) => p[0] - q[0]); const show = lines.slice(-7).map((l, i, arr) => (i === arr.length - 1 ? l[1].slice(0, Math.max(1, ((t - l[0]) * 40) | 0)) + (rowN % 4 < 2 ? '█' : '') : l[1]));
+      term.textContent = show.join('\n');
     };
     hackRaf = requestAnimationFrame(step);
   }
@@ -388,7 +470,7 @@
     const nf = noflash(), blk = el$('cx-black');
     // 1. la piste en cours est court-circuitée (bégaiement puis coupure), la transmission forcée prend le dessus à plein volume
     Sound.bgCut(60); await sleep(110); Sound.bgRestore(40); await sleep(90); Sound.bgCut(60); await sleep(120);
-    const fxP = Sound.fx('hack'); hackVisual(true); buzz('0,120,60,120,60,260');
+    const fxP = Sound.fx('hack'); el$('cx-tape').classList.add('hold'); hackVisual(true); buzz('0,120,60,120,60,260');
     const hv = setInterval(() => buzz('0,80,120,200'), 2600);
     // 2. 30 s de transmission
     await sleep(HACK_MS - 200); clearInterval(hv);
@@ -400,7 +482,7 @@
     // 4. fondu au noir (le son s'éteint en même temps), court silence noir
     blk.classList.remove('intf'); await sleep(BLACK_MS - INTF_MS); blk.classList.remove('calm');
     // 5. retour à la projection classique
-    blk.style.transition = 'opacity ' + (FADE_MS / 1000) + 's ease'; blk.style.opacity = 0; Sound.bgRestore(FADE_MS);
+    blk.style.transition = 'opacity ' + (FADE_MS / 1000) + 's ease'; blk.style.opacity = 0; el$('cx-tape').classList.remove('hold'); Sound.bgRestore(FADE_MS);
     await sleep(FADE_MS); hijack = false; skipReq = 0; taps = [];
   }
 
@@ -543,7 +625,7 @@
     T0 = now(); deadline = window.__lxFromLaunch ? Math.max(T0 + 120000, TOTAL_MS) : T0 + 170000; scenAt = T0 + (deadline - T0) * .72;
     const snd = ls.get('lx.sound', '1') === '1'; Sound.mute(!snd); el$('cx-snd').innerHTML = snd ? ICON.vol : ICON.mute;
     if (snd) Score.start();
-    levelLoop(); clockInt = setInterval(clockLoop, 250); clockLoop();
+    levelLoop(); clockInt = setInterval(clockLoop, 250); clockLoop(); tapeLayer(true);
     // carte d'ouverture + planification (calcul des durées de chaque bloc) pendant l'annonce d'intro
     card.style.display = 'flex'; card.querySelector('.cx-num').textContent = 'TRANSMISSION'; card.querySelector('.cx-num').style.opacity = 1;
     card.querySelector('.cx-sub').textContent = 'SYNCHRONIZING · SECURE CHANNEL'; card.querySelector('.cx-sub').style.opacity = 1;
@@ -557,7 +639,7 @@
   function exit(natural) {
     if (!active) return;
     active = false; window.__cinemaActive = false; tok.cancel = true; finishAll(); hijack = false; hackReq = false;
-    cancelAnimationFrame(lvlRaf); clearInterval(clockInt); glow.style.opacity = 0; hackVisual(false);
+    cancelAnimationFrame(lvlRaf); clearInterval(clockInt); glow.style.opacity = 0; hackVisual(false); tapeLayer(false);
     const blk = el$('cx-black'); blk.style.transition = 'none'; blk.style.opacity = 0; blk.classList.remove('intf', 'calm');
     Sound.stopSay(); Sound.fxStop(); Score.stop(natural ? 2.5 : 1.2); $$('[data-nar-st]').forEach(e => e.removeAttribute('data-nar-st'));
     $$('.cx-b').forEach(b => { b.classList.remove('cx-b', 'cx-on'); b.getAnimations && b.getAnimations().forEach(a => a.cancel()); b.style.filter = ''; });
@@ -594,5 +676,5 @@
   } else { window.__lxCinema = true; window.__lxFromLaunch = true; if (window.__launchSeq) window.__launchSeq(); }
 
   window.__cinemaTest = collectBlocks;
-  window.__cinema = { FX, start, exit, hack, get plans() { return plans; }, get nomLeft() { return nomLeft; }, kLive: () => kLive(), get active() { return active; }, get hijack() { return hijack; }, get deadline() { return deadline; }, Score, Sound };
+  window.__cinema = { FX, start, exit, hack, get plans() { return plans; }, get nomLeft() { return nomLeft; }, kLive: () => kLive(), get active() { return active; }, get hijack() { return hijack; }, get hackDone() { return hackDone; }, get cancelled() { return tok.cancel; }, get deadline() { return deadline; }, Score, Sound };
 })();

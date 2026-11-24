@@ -3,7 +3,7 @@
 # Usage:  ./push-to-github.sh [owner] [repo]        (defaults: VTLO VTLOdr3m3r)
 # Auth (any one):  `gh auth login` already done  |  export GITHUB_TOKEN=ghp_xxx (scope: repo)  |  git credential helper
 set -euo pipefail
-OWNER="${1:-VTLO}"; REPO="${2:-VTLOdr3m3r}"; DESC="VTLOdr3m3r — paranormal research · New Era warfare studies (Operation Lightning)"
+OWNER="${1:-VTLO}"; REPO="${2:-VTLOdr3m3r}"; DESC="Unclassified (?) - case file 2606.03673. Field notes on an anomalous emitter. #by VTLO@xda"
 cd "$(dirname "$0")"
 command -v git >/dev/null || { echo "git is required (Termux: pkg install git)"; exit 1; }
 [ -d .git ] || git init -q -b main

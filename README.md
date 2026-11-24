@@ -1,59 +1,84 @@
-<p align="center"><img src="assets/banner.svg" alt="VTLOdr3m3r — paranormal research · New Era warfare studies" width="100%"></p>
+<p align="center"><img src="assets/banner.svg" alt="VTLOdr3m3r — unclassified case file: anomalous signals and New Era warfare" width="100%"></p>
 
-<p align="center">
-<b>PARANORMAL RESEARCH · NEW ERA WARFARE STUDIES</b><br>
-<sub>Operation Lightning · Project S3CR3T · GNSS interference intelligence · #by VTLO@xda</sub>
-</p>
+<p align="center"><code>CASE FILE 2606.03673</code> · <code>STATUS: UNCLASSIFIED</code> <sub>(that is what the cover sheet says)</sub></p>
 
-<p align="center">
-<a href="dist/VTLOdr3m3r.html"><b>▶ Standalone web app</b></a> ·
-<a href="#web-app-pwa">PWA</a> ·
-<a href="#build">Android APK</a>
-</p>
+---
 
-> ⚠ **Viewer discretion** — sudden loud sounds, bright and strobing light effects. A dramatized presentation of the research paper *Operation Lightning — GNSS Interference Intelligence* (arXiv 2606.03673); the paranormal framing is a study theme, not an official source.
+## What this is
 
-# VTLOdr3m3r — Operation Lightning
+Nobody opened this file on purpose.
 
-Offline Android app presenting the report **OPERATION LIGHTNING — GNSS Interference Intelligence** (arXiv 2606.03673) as a **3-minute cinematic presentation**. `#by VTLO@xda` · PROJECT S3CR3T · Copyleft — all wrongs reserved.
-All on-screen text is in English; the narration voice is French (brief radio-style summaries of what is displayed).
+It began as a pile of receiver logs that did not agree with each other, and a handful of seconds of raw recording that should have been noise. Over seven years, in places that have nothing in common, something **leans on the sky** for a few heartbeats and lets go. Then it does it again, somewhere else.
 
-## Run (3:00 from app launch)
-| Time | Sequence |
+We call it *the emitter*. That is a convenient word. It says nothing about what it is.
+
+This repository is the working file. It is incomplete on purpose, and partly by accident.
+
+## Field notes
+
+> **M.** — *It is not interference. Interference is careless. This is careful.*
+>
+> **S.** — *It is a machine in orbit doing exactly what machines in orbit do. Careful is how it looks when you want it to look like something.*
+>
+> **M.** — *Then why does it stop the moment we start to listen?*
+>
+> **S.** — *It doesn't. You started listening when it stopped.*
+
+> **S.** — *I ran the numbers three times. They are consistent with a perfectly ordinary explanation.*
+>
+> **M.** — *"Consistent with" is not the same as "is".*
+>
+> **S.** — *…No. It isn't.*
+
+> **M.** — *Look at who benefits when the sky goes quiet over one country and loud over another.*
+>
+> **S.** — *That is a question about people, not about the signal.*
+>
+> **M.** — *Is it?*
+
+## Exhibits
+
+| | |
 |---|---|
-| 0:00 – 0:04 | **Real-time clock** (local time, UTC, date) + compact viewer-discretion notice and a *No-flash mode* switch |
-| 0:04 – 0:10 | Original storm intro (shortened) |
-| 0:10 – 3:00 | Presentation of **4 pages**: Overview, TDOA Capture, Target Profile (with the enlarged, highlighted Molniya orbit animation), Solar Comparison — 27 blocks revealed one by one with blur/deblur, puzzle, kaleidoscope, whirlpool, liquid, 3D assemble/disassemble… |
-| right after the orbit animation, **or 3 taps within 8 s** | **Scenario**: unidentified forced radio transmission (30 s, reversed voices, guttural growl, abstract inharmonic waveform, maximum volume, running track "hacked") → loud radio interference over a heavily blurred VTLO logo (8.5 s) → fade to black → back to the presentation |
-| 2:53 – 3:00 | End of transmission, back to the app |
+| **Exhibit A** — the recorder | `dist/VTLOdr3m3r.apk` — plays the tape on a handheld unit |
+| **Exhibit B** — the viewer | `dist/VTLOdr3m3r.html` — one file. Open it. Keep the volume low, then raise it. |
+| **Exhibit C** — the tape | the three-minute presentation inside A and B. It will tell you what it wants you to know. |
+| **Exhibit D** — the rest | everything else in this folder. We did not label it. |
 
-After the run **all 10 pages remain available** through the normal navigation (the floating film button replays the presentation).
-The sequencer is **time-budgeted**: pace adapts continuously (taps, pause, scenario) so the run ends on time. One tap = next block; HUD: pause, next block, next page, sound, exit.
+The tape runs for three minutes, and ends when it ends. Somewhere in the middle it **will not be the one speaking**. This is normal. Do not answer it.
 
-## Audio: 100 % static (no real-time synthesis)
-`app/src/main/assets/www/audio/`, played by native `MediaPlayer` (3 channels: ambience, voice, loud effects):
-- `bg.mp3`: 3 min AM-radio / air-control ambience (unintelligible voices, flanger, bitcrusher, distortion), −13.5 LUFS, band-split mastering
-- `nar/*.mp3`: 33 clips (Piper `fr_FR-tom-medium`), slower and cleaner than before, lightly radio-processed (mild pitch glitches, band-limited, hiss); played at ×1.16; ambience ducks under the voice
-- `hack.mp3` (30 s) and `interference.mp3` (11 s, fades to silence from 8.5 s): scenario, −9.6 / −10 LUFS, peak ≤ −1.5 dBFS
-- `meta.js`: clip durations + ambience pulse envelope (for the lighting)
-Generators and measurements: `tools/audio/`.
+## Working hypotheses
 
-## App
-No Internet permission (VIBRATE only), embedded fonts, mobile layout, tilt-reactive WebGL storm background.
+1. **Solar.** The sun is loud and old and has never needed a reason. *(S. favors this. S. also admits it does not explain the schedule.)*
+2. **Terrestrial.** Someone, somewhere, with a very large antenna and a very bad idea.
+3. **Orbital — and ours.** A satellite doing a job we were not told about. *(Plausible. Plausible is what they say right before it gets worse.)*
+4. **Orbital — and not ours.** *(M. will not discuss it in writing.)*
+5. **The signal was made to be found.** *(Nobody has proposed this aloud. It is in all of the margins.)*
 
-## Web app (PWA)
-Same presentation in any modern browser, installable and fully offline (service worker): `./scripts/build-web.sh` → `web/` (needs Python + Pillow).
-A start screen asks for one tap (browsers block autoplay audio) → *Start 3-min presentation* or *Browse pages only*.
-Deployed by `.github/workflows/pages.yml` to GitHub Pages (enable Settings → Pages → Source: GitHub Actions). Local test: `cd web && python3 -m http.server`.
+## Open questions
 
-## Standalone web app (single file, download & open)
-**`dist/VTLOdr3m3r.html`** (7.7 MB) — everything inlined (fonts, CSS, JS, icon, all audio). Download it from the repo (Raw / Download) and open it in any modern browser, even offline: no server, no install.
-Rebuild: `./scripts/build-web.sh && python3 scripts/build-standalone.py`.
+- Why are the timestamps on the tape **wrong in the same direction**, every time?
+- Why does the pattern improve when the recording quality gets worse?
+- Who requested the original capture, and why was the request filed **before** the event?
+- Who has been **listening to us listening**?
+- ██████████ ███ ████████ ██ █████.
 
-## Publish
-`./push-to-github.sh` creates the public repo `VTLO/VTLOdr3m3r` and pushes everything (needs `gh auth login` or `GITHUB_TOKEN`).
+## Chain of custody
 
-## Build
-**Gradle**: `echo "sdk.dir=/path/sdk" > local.properties && ./gradlew assembleRelease`
-**Without Gradle**: `ANDROID_HOME=/path/sdk ./scripts/build-apk.sh` → `out/VTLOdr3m3r.apk` (MP3s stored uncompressed: required by `AssetFileDescriptor`).
-Optional release signing: `KEYSTORE_FILE`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`. CI: `.github/workflows/build.yml`.
+Seven years. A hundred and some stations. Two recordings that we are not supposed to be able to explain. Several people who stopped answering messages. *(We are not suggesting anything. We are only listing.)*
+
+One recipient wrote back, once, and only the following:
+
+> `it knows the tape is playing`
+
+## Handling
+
+- Treat the material as **unverified**, whichever direction it points.
+- If a recording seems to be talking to you, it is the recording. Probably.
+- If the date stamp on your screen reads **1996**, nothing is wrong. Nothing has ever been wrong.
+- Do not trust the timecode. Do not trust the tape. Trust the pattern, and be suspicious of how much you want to.
+
+---
+
+<p align="center"><sub><b>The signal is real. The source is not.</b> &nbsp;·&nbsp; <code>#by VTLO@xda</code> &nbsp;·&nbsp; PROJECT S3CR3T</sub></p>
+<p align="center"><sub>A dramatized case-file presentation. Any resemblance to genuine classified material is part of the fiction.</sub></p>

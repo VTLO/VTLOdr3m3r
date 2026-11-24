@@ -391,15 +391,30 @@ html.cinema #cx-bars .cx-bar { transform: none; }
 .clk-sw input:checked { background: #00a9c0; } .clk-sw input:checked::after { transform: translateX(14px); background: #fff; }
 
 /* ═════════ SCÉNARIO : TRANSMISSION FORCÉE + NOIR ═════════ */
-#cx-hack { position: fixed; inset: 0; z-index: 9996; opacity: 0; pointer-events: none; transition: opacity .25s ease; background: rgba(0,4,8,.55); }
+#cx-hack { position: fixed; inset: 0; z-index: 9996; opacity: 0; pointer-events: none; transition: opacity .12s steps(2); background: #02090b; font-family: 'Space Mono', monospace; color: #9fe8c8; }
 #cx-hack.on { opacity: 1; }
-#cx-hack-cv { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; mix-blend-mode: screen; opacity: .9; }
-#cx-hack::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 2px, transparent 2px 4px); }
-.hk-top { position: absolute; top: calc(70px + var(--sat)); left: 0; right: 0; text-align: center; font: 700 15px 'Space Mono', monospace; letter-spacing: 6px; color: #ff4b44; text-shadow: 2px 0 #00e5ff, -2px 0 #ff00aa, 0 0 18px rgba(255,60,50,.8); }
-.hk-mid { position: absolute; top: 38%; left: 0; right: 0; text-align: center; font: 400 clamp(30px, 10vw, 62px)/1 'Bebas Neue', sans-serif; letter-spacing: 5px; color: #dff6ff; text-shadow: 3px 0 rgba(255,0,60,.8), -3px 0 rgba(0,229,255,.8), 0 0 24px rgba(0,229,255,.6); }
-.hk-bot { position: absolute; bottom: calc(86px + var(--sab)); left: 0; right: 0; text-align: center; font: 10px 'Space Mono', monospace; letter-spacing: 2px; color: #8fd8e8; padding: 0 12px; }
-html:not(.noflash) #cx-hack.on .hk-mid { animation: hkJit .9s steps(2, jump-none) infinite; }
-@keyframes hkJit { 0%{transform:translateX(0)} 25%{transform:translateX(-5px) skewX(3deg)} 50%{transform:translateX(4px)} 75%{transform:translateX(-2px) skewX(-4deg)} }
+#cx-hack-cv, #cx-hack-fx { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+#cx-hack-fx { mix-blend-mode: normal; }
+#cx-hack::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.30) 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.65)); }
+.hk-osd { position: absolute; top: calc(14px + var(--sat)); font: 700 12px 'Space Mono', monospace; letter-spacing: 2px; color: #d6ffe9; text-shadow: 2px 0 rgba(255,0,60,.55), -2px 0 rgba(0,229,255,.5); }
+.hk-l { left: 14px; } .hk-r { right: 14px; color: #ff6a50; }
+.hk-bar { position: absolute; top: calc(40px + var(--sat)); left: 0; right: 0; text-align: center; font: 10px 'Space Mono', monospace; letter-spacing: 1.5px; color: #8fd8c0; }
+.hk-mid { position: absolute; top: calc(60px + var(--sat)); left: 0; right: 0; text-align: center; font: 400 clamp(26px, 8.5vw, 46px)/1 'Bebas Neue', sans-serif; letter-spacing: 4px; color: #ffd9b0; text-shadow: 3px 0 rgba(255,0,60,.7), -3px 0 rgba(0,229,255,.6), 0 0 22px rgba(255,150,40,.55); }
+.hk-term { position: absolute; left: 12px; right: 12px; top: 78%; margin: 0; font: 700 11px/1.5 'Space Mono', monospace; color: #b8ffd8; white-space: pre-wrap; text-shadow: 0 0 8px rgba(80,255,170,.5); }
+.hk-bot { position: absolute; bottom: calc(16px + var(--sab)); left: 0; right: 0; text-align: center; font: 9px 'Space Mono', monospace; letter-spacing: 2px; color: #6fb8a0; }
+html:not(.noflash) #cx-hack.on .hk-mid { animation: hkJit .7s steps(2, jump-none) infinite; }
+html:not(.noflash) #cx-hack.on .hk-term { animation: hkJit2 2.3s steps(1) infinite; }
+@keyframes hkJit2 { 0%,92%,100% { transform: none; } 93% { transform: translateX(5px) skewX(-6deg); } 96% { transform: translateX(-4px); } }
+/* ── tape layer (analog horror): VHS damage on the whole projection ── */
+#cx-tape { position: fixed; inset: 0; z-index: 9991; pointer-events: none; opacity: 0; transition: opacity .6s; mix-blend-mode: normal; }
+#cx-tape.on { opacity: 1; } #cx-tape.hold { opacity: 0 !important; }
+#cx-tape-cv { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; opacity: .75; }
+#cx-tape::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 50%, rgba(10,6,0,.5)); }
+#cx-tape::after { content: ''; position: absolute; inset: 0; background: rgba(70,50,20,.10); mix-blend-mode: multiply; }
+.tp-osd { position: absolute; font: 700 13px 'Space Mono', monospace; letter-spacing: 2px; color: #f2f2e8; text-shadow: 2px 0 rgba(255,0,40,.5), -2px 0 rgba(0,200,255,.45), 0 0 6px rgba(255,255,255,.3); opacity: .9; }
+.tp-l { left: calc(14px + var(--sal)); top: calc(56px + var(--sat)); } .tp-r { right: calc(14px + var(--sal)); top: calc(56px + var(--sat)); }
+.tp-d { left: calc(14px + var(--sal)); bottom: calc(76px + var(--sab)); color: #ffb04a; }
+
 #cx-black { position: fixed; inset: 0; z-index: 9997; background: #000; opacity: 0; pointer-events: none; }
 /* interference: heavily blurred VTLO logo behind snow + scanlines; removing .intf fades everything to pure black */
 #cx-black .cx-ilogo { position: absolute; inset: -10%; background: url(img/vtlo.png) center / min(78vw, 70vh) no-repeat; filter: blur(30px) saturate(1.4) brightness(1.1); opacity: 0; transition: opacity 1.4s ease; }
