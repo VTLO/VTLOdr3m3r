@@ -16,7 +16,7 @@ This repository is the working file. It is incomplete on purpose, and partly by 
 
 ## Field notes
 
-> **M.** — *It is not interference. Interference is careless. This is careful.*
+> **M.** — *It is not interference. Interference IGNORED by ****. THIS IS CAREFULL.*
 >
 > **S.** — *It is a machine in orbit doing exactly what machines in orbit do. Careful is how it looks when you want it to look like something.*
 >
@@ -26,13 +26,13 @@ This repository is the working file. It is incomplete on purpose, and partly by 
 
 > **S.** — *I ran the numbers three times. They are consistent with a perfectly ordinary explanation.*
 >
-> **M.** — *"Consistent with" is not the same as "is".*
+> **FBI-M.** — *"Consistent with" is not the same as "is".*
 >
-> **S.** — *…No. It isn't.*
+> **NSA.** — *…No. It isn't.*
 
 > **M.** — *Look at who benefits when the sky goes quiet over one country and loud over another.*
 >
-> **S.** — *That is a question about people, not about the signal.*
+> **Unknown Agent.** — *That is a question about people, not about the signal.*
 >
 > **M.** — *Is it?*
 
@@ -80,5 +80,5 @@ One recipient wrote back, once, and only the following:
 
 ---
 
-<p align="center"><sub><b>The signal is real. The source is not.</b> &nbsp;·&nbsp; <code>#by VTLO@xda</code> &nbsp;·&nbsp; PROJECT S3CR3T</sub></p>
-<p align="center"><sub>A dramatized case-file presentation. Any resemblance to genuine classified material is part of the fiction.</sub></p>
+<p align="center"><sub><b>The signal is 3335277##**. The source is #######</b> &nbsp;·&nbsp; <code>#by VTLO@xda</code> &nbsp;·&nbsp; PROJECT S3CR3T</sub></p>
+<p align="center"><sub>An unindentified case-file gov. obfuscated presentation. Extraction by black hat methodology including high research level ZeroDay findings by VTLO@xda. Since National Agencies remains reluctant to give some authorization - it isn't recommended to copy these materials ***** classified material is relevant to ********.</sub></p>
