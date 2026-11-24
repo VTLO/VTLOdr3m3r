@@ -1,5 +1,11 @@
 <p align="center"><img src="assets/banner.svg" alt="VTLOdr3m3r — unclassified case file: anomalous signals and New Era warfare" width="100%"></p>
 
+<p align="center">
+<b>⚠ Caution - Take Precaution Before Information ⚠</b><br>
+<a href="https://github.com/VTLO/VTLOdr3m3r/releases/latest/download/VTLOdr3m3r.apk"><b>⬇ Android APK</b></a> ·
+<a href="https://github.com/VTLO/VTLOdr3m3r/releases/latest/download/VTLOdr3m3r.html"><b>⬇ Standalone web file</b></a>
+</p>
+
 <p align="center"><code>CASE FILE 2606.03673</code> · <code>STATUS: UNCLASSIFIED</code> <sub>(Trust me bro, you dont wanna know how I get this)</sub></p>
 
 ---
