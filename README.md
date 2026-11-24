@@ -1,6 +1,6 @@
 <p align="center"><img src="assets/banner.svg" alt="VTLOdr3m3r — unclassified case file: anomalous signals and New Era warfare" width="100%"></p>
 
-<p align="center"><code>CASE FILE 2606.03673</code> · <code>STATUS: UNCLASSIFIED</code> <sub>(that is what the cover sheet says)</sub></p>
+<p align="center"><code>CASE FILE 2606.03673</code> · <code>STATUS: UNCLASSIFIED</code> <sub>(Trust me bro, you dont wanna known how I get this)</sub></p>
 
 ---
 
